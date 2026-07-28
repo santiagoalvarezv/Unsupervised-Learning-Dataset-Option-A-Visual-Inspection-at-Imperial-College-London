@@ -1,0 +1,1 @@
+{"method": "cnn", "img_size": [64, 64], "grayscale": true, "pca_variance": 0.9, "ae_bottleneck": 32, "ae_hidden": 128, "ae_noise_std": 0.0, "cnn_pretrained": true}

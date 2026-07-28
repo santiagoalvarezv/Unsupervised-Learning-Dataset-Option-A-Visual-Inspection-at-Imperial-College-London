@@ -1,0 +1,10 @@
+numpy
+Pillow
+scikit-learn
+matplotlib
+joblib
+
+# Optional - only needed for --method cnn (deep-feature detector).
+# Skip these two lines if you only use --method pca / --method autoencoder.
+torch
+torchvision
