@@ -65,12 +65,16 @@ def load_test_set(data_root, category, img_size, grayscale):
         X: (N, D) array of all test image vectors
         paths: list of N file paths (same order as X)
         labels: (N,) array, 0 = normal ("good"), 1 = defective (any other subfolder)
+        defect_types: (N,) array of strings - the exact subfolder name for each
+                       image (e.g. "good", "broken_large", "crack", ...). Lets you
+                       break results down by specific defect type, not just
+                       normal vs. defective.
     """
     test_dir = os.path.join(data_root, category, "test")
     if not os.path.isdir(test_dir):
         raise FileNotFoundError(f"Expected folder not found: {test_dir}")
 
-    vectors_list, paths, labels = [], [], []
+    vectors_list, paths, labels, defect_types = [], [], [], []
     for subfolder in sorted(os.listdir(test_dir)):
         sub_path = os.path.join(test_dir, subfolder)
         if not os.path.isdir(sub_path):
@@ -82,8 +86,9 @@ def load_test_set(data_root, category, img_size, grayscale):
         vectors_list.append(X_sub)
         paths.extend(paths_sub)
         labels.extend([label] * len(paths_sub))
+        defect_types.extend([subfolder] * len(paths_sub))
 
     if not vectors_list:
         raise RuntimeError(f"No test images found under {test_dir}")
 
-    return np.vstack(vectors_list), paths, np.array(labels)
+    return np.vstack(vectors_list), paths, np.array(labels), np.array(defect_types)

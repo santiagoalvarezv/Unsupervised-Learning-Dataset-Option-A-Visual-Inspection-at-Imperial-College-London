@@ -4,7 +4,7 @@ scikit-learn
 matplotlib
 joblib
 
-# Optional - only needed for --method cnn (deep-feature detector).
-# Skip these two lines if you only use --method pca / --method autoencoder.
+# Needed for --method autoencoder (convolutional) and --method cnn (deep features).
+# Skip both lines below if you only ever use --method pca.
 torch
 torchvision

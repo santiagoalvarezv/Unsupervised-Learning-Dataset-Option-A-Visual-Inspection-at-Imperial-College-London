@@ -50,7 +50,7 @@ def main(category, method):
     with open(threshold_path) as f:
         threshold = float(f.read())
 
-    X_test, paths, labels = load_test_set(DATA_ROOT, category, img_size, grayscale)
+    X_test, paths, labels, defect_types = load_test_set(DATA_ROOT, category, img_size, grayscale)
 
     if method == "cnn":
         # Score using deep features (not raw pixels); keep small RGB thumbnails
@@ -93,6 +93,7 @@ def main(category, method):
         out_path,
         errors=errors,
         labels=labels,
+        defect_types=defect_types,
         predictions=predictions,
         threshold=threshold,
         paths=np.array(paths),

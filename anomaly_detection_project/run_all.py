@@ -1,6 +1,7 @@
 """
 Run the FULL pipeline for one category in a single command:
-  train + evaluate + visualize for each method, then compare.py.
+  train + evaluate + visualize + breakdown_by_defect for each method,
+  then compare.py.
 
 Usage:
     python run_all.py --category hazelnut                       # pca + autoencoder (default)
@@ -28,6 +29,7 @@ def main(category, methods, extra_train_args):
         run([sys.executable, "train.py", "--category", category, "--method", method] + extra_train_args)
         run([sys.executable, "evaluate.py", "--category", category, "--method", method])
         run([sys.executable, "visualize.py", "--category", category, "--method", method])
+        run([sys.executable, "breakdown_by_defect.py", "--category", category, "--method", method])
 
     run([sys.executable, "compare.py", "--category", category, "--methods", ",".join(methods)])
 

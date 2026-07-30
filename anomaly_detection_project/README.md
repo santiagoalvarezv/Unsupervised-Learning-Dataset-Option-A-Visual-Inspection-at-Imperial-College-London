@@ -3,7 +3,8 @@
 Three anomaly detectors, all trained only on normal images:
 
 1. **PCA** — linear, works on raw pixels.
-2. **Autoencoder** — nonlinear neural network, also works on raw pixels.
+2. **Autoencoder** — convolutional neural network (preserves the image's 2D
+   spatial structure), also works on raw pixels.
 3. **CNN features** — PCA applied to deep features from a pretrained
    ResNet18 instead of raw pixels (closer to what current state-of-the-art
    methods do on this benchmark).
@@ -12,14 +13,50 @@ Each method's reconstruction/feature error is used as its anomaly score.
 Includes a comparison script to decide which method performs better per
 category.
 
+## 0. Opening a terminal and activating the environment (do this every time)
+
+Every time you reopen VS Code (or open a new terminal tab), you need to do
+this before running any command below:
+
+1. Open a terminal: **Terminal → New Terminal** in the top menu.
+2. Activate the virtual environment:
+   ```bash
+   .\venv\Scripts\Activate.ps1
+   ```
+   You'll know it worked when the prompt starts with `(venv)`.
+3. Make sure you're in the folder that actually contains `train.py`,
+   `config.py`, etc. (some project setups have the folder nested twice —
+   e.g. `anomaly_detection_project\anomaly_detection_project`). If you're
+   not sure, list what's there:
+   ```bash
+   dir
+   ```
+   If you see `train.py` in the list, you're in the right place. If not:
+   ```bash
+   cd anomaly_detection_project
+   ```
+
+Your prompt should end up looking like this before you run anything else:
+```
+(venv) PS C:\Users\...\anomaly_detection_project\anomaly_detection_project>
+```
+
+If `.\venv\Scripts\Activate.ps1` gives a "script execution is disabled"
+error, run this once (type `Y` if it asks for confirmation), then try
+activating again:
+```bash
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
 ## 1. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-`torch` and `torchvision` are listed but only needed for `--method cnn` —
-skip installing those two if you're only using `pca`/`autoencoder`.
+`torch` is required for `--method autoencoder` (it's a convolutional network)
+and `--method cnn`. `torchvision` is only needed for `--method cnn`. Skip
+both if you're only ever using `--method pca`.
 
 ## 2. Where to put your dataset (this is the important part)
 
@@ -121,13 +158,20 @@ Extra flags for `train.py`:
 - `--img-size` (e.g. `128x128`), `--pca-variance` (e.g. `0.95`),
   `--threshold-percentile` (e.g. `95`) — see section 6. `--pca-variance`
   applies to both `pca` and `cnn` methods.
-- `--ae-bottleneck` (default 32) / `--ae-hidden` (default 128) — autoencoder
-  architecture size.
+- `--ae-bottleneck` (default 32) / `--ae-hidden` (default 128) — number of
+  channels in the autoencoder's convolutional layers (not neuron counts —
+  this is a conv net, not a dense one).
 - `--noise-std` (default 0.0) — turns the autoencoder into a *denoising*
   autoencoder: Gaussian noise is added to the input during training only,
   while the target stays the clean image. Try `--noise-std 0.1`. Optional —
   leaving it at 0 (the default) trains a plain autoencoder, nothing changes
   if you never pass this flag.
+
+**Important:** the autoencoder architecture changed from a fully-connected
+network to a convolutional one. If you trained an autoencoder before this
+change, its saved model file is no longer compatible — just re-run
+`train.py --method autoencoder` (or `run_all.py`) for every category to
+retrain it; PCA and CNN models are unaffected and don't need retraining.
 
 The exact settings used for a given run are saved alongside its model, so
 `evaluate.py`/`visualize.py` always pick up the right values automatically
@@ -158,7 +202,36 @@ Notes specific to this method:
   ImageNet weights — only useful for offline testing, gives much weaker
   results, don't use it for your actual report.
 
-## 6. What to check in `results/`
+## 6. Breaking results down by specific defect type
+
+By default, results only distinguish "normal" vs. "defective" as a whole.
+If you want to know how well each *specific* defect type is caught (e.g.
+"crack" vs. "hole" for hazelnut, "bent_lead" vs. "misplaced" for
+transistor), use `breakdown_by_defect.py`:
+
+```bash
+python breakdown_by_defect.py --category hazelnut --method cnn
+```
+
+Prints a table like:
+
+```
+Defect type            Count   Flagged  Detection rate
+------------------------------------------------------
+crack                       9         8          88.9%   (detection rate)
+cut                         8         7          87.5%   (detection rate)
+good                       40         5          12.5%   (false alarm rate)
+hole                      10        10         100.0%   (detection rate)
+print                      9         6          66.7%   (detection rate)
+```
+
+`good`'s rate means false alarms, not detections - it's labelled
+differently in the printout so it's not misread as a detection rate. Also
+saves a bar chart, `results/<category>_<method>_by_defect_type.png`, so you
+can show at a glance which defect types each method struggles with. This
+runs automatically as part of `run_all.py` for every method.
+
+## 7. What to check in `results/`
 
 Every file is named `<category>_<method>_...`, so different methods'
 outputs never overwrite each other:
@@ -182,7 +255,7 @@ The four example categories above (true positive / false alarm / missed
 defect / correct normal) are exactly what the project guide asks for in the
 deliverables section.
 
-## 7. Simple tweaks if results aren't convincing
+## 8. Simple tweaks if results aren't convincing
 
 Passed to `train.py` (or `run_all.py`, which forwards them):
 
@@ -200,7 +273,7 @@ Passed to `train.py` (or `run_all.py`, which forwards them):
 - Try `--method cnn` if `pca`/`autoencoder` are both struggling on a
   category — see section 5.
 
-## 8. Sharing the project on GitHub (without the dataset)
+## 9. Sharing the project on GitHub (without the dataset)
 
 Do **not** upload the `data/` folder to GitHub — it's thousands of files
 and GitHub isn't meant for datasets this size. A `.gitignore` file should
@@ -247,7 +320,7 @@ git pull origin main --allow-unrelated-histories
 
 before pushing.
 
-## 9. Notes for the report
+## 10. Notes for the report
 
 - Training never touches `test/` images — the script makes this impossible
   by design (`train.py` only ever reads from the `train/` folder).

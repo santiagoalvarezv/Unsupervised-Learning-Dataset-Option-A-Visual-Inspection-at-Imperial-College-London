@@ -25,11 +25,12 @@ def parse_img_size(value):
     return (int(w), int(h))
 
 
-def build_detector(method, pca_variance, ae_bottleneck, ae_hidden, ae_noise_std):
+def build_detector(method, img_size, grayscale, pca_variance, ae_bottleneck, ae_hidden, ae_noise_std):
     if method == "pca":
         return PCAAnomalyDetector(variance=pca_variance)
     elif method == "autoencoder":
-        return AEAnomalyDetector(bottleneck=ae_bottleneck, hidden=ae_hidden, noise_std=ae_noise_std)
+        return AEAnomalyDetector(img_size=img_size, grayscale=grayscale, bottleneck=ae_bottleneck,
+                                  hidden=ae_hidden, noise_std=ae_noise_std)
     elif method == "cnn":
         from cnn_model import CNNFeatureAnomalyDetector
         return CNNFeatureAnomalyDetector(variance=pca_variance)
@@ -54,7 +55,7 @@ def main(category, img_size, method, pca_variance, threshold_percentile, ae_bott
     print(f"[{category}/{method}] Loaded {len(X_train)} normal training images "
           f"({X_train.shape[1]} features each).")
 
-    detector = build_detector(method, pca_variance, ae_bottleneck, ae_hidden, ae_noise_std)
+    detector = build_detector(method, img_size, GRAYSCALE, pca_variance, ae_bottleneck, ae_hidden, ae_noise_std)
     detector.fit(X_train)
     if method == "pca":
         print(f"[{category}/{method}] PCA kept {detector.pca.n_components_} components "
