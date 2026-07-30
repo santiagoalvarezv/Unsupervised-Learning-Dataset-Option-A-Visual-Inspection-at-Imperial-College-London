@@ -1,1 +1,1 @@
-{"method": "autoencoder", "img_size": [64, 64], "grayscale": true, "pca_variance": 0.9, "ae_bottleneck": 32, "ae_hidden": 128, "ae_noise_std": 0.0, "cnn_pretrained": true}
+{"method": "autoencoder", "img_size": [64, 64], "grayscale": true, "pca_variance": 0.9, "ae_bottleneck": 32, "ae_hidden": 128, "ae_noise_std": 0.0, "cnn_pretrained": true, "val_split": 0.2, "n_train": 170, "n_val": 43, "threshold": 0.0016791089437901974, "threshold_percentile": 99, "final_loss": 0.0010167661503973332, "initial_loss": 0.03541442480954257}

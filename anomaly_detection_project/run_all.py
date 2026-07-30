@@ -32,6 +32,7 @@ def main(category, methods, extra_train_args):
         run([sys.executable, "breakdown_by_defect.py", "--category", category, "--method", method])
 
     run([sys.executable, "compare.py", "--category", category, "--methods", ",".join(methods)])
+    run([sys.executable, "summary.py", "--category", category])
 
 
 if __name__ == "__main__":
@@ -43,6 +44,7 @@ if __name__ == "__main__":
     parser.add_argument("--img-size", default=None, help="Passed through to train.py (all methods)")
     parser.add_argument("--pca-variance", default=None, help="Passed through to train.py (pca/cnn methods)")
     parser.add_argument("--threshold-percentile", default=None, help="Passed through to train.py (all methods)")
+    parser.add_argument("--val-split", default=None, help="Passed through to train.py (all methods)")
     args = parser.parse_args()
 
     extra = []
@@ -52,5 +54,7 @@ if __name__ == "__main__":
         extra += ["--pca-variance", args.pca_variance]
     if args.threshold_percentile:
         extra += ["--threshold-percentile", args.threshold_percentile]
+    if args.val_split:
+        extra += ["--val-split", args.val_split]
 
     main(args.category or CATEGORY, [m.strip() for m in args.methods.split(",")], extra)

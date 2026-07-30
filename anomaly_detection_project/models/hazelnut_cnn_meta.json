@@ -1,1 +1,1 @@
-{"method": "cnn", "img_size": [64, 64], "grayscale": true, "pca_variance": 0.9, "ae_bottleneck": 32, "ae_hidden": 128, "ae_noise_std": 0.0, "cnn_pretrained": true}
+{"method": "cnn", "img_size": [64, 64], "grayscale": true, "pca_variance": 0.9, "ae_bottleneck": 32, "ae_hidden": 128, "ae_noise_std": 0.0, "cnn_pretrained": true, "val_split": 0.2, "n_train": 313, "n_val": 78, "threshold": 0.061017073690891266, "threshold_percentile": 99}

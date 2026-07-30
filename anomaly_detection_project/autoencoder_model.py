@@ -77,6 +77,7 @@ class AEAnomalyDetector:
         self.device = device
         self.in_channels = 1 if grayscale else 3
         self.net = _ConvAE(self.in_channels, img_size, hidden, bottleneck).to(device)
+        self.loss_history = []  # filled in by fit(); kept empty until then
 
     def _to_tensor(self, X):
         """(N, D) flat pixel vectors -> (N, C, H, W) tensor, matching how
@@ -107,14 +108,18 @@ class AEAnomalyDetector:
         optimizer = torch.optim.Adam(self.net.parameters(), lr=self.lr)
         loss_fn = nn.MSELoss()
 
+        self.loss_history = []  # average MSE loss per epoch, for a training curve
         self.net.train()
         for _ in range(self.epochs):
+            epoch_losses = []
             for batch_input, batch_target in loader:
                 optimizer.zero_grad()
                 output = self.net(batch_input)
                 loss = loss_fn(output, batch_target)
                 loss.backward()
                 optimizer.step()
+                epoch_losses.append(loss.item())
+            self.loss_history.append(float(np.mean(epoch_losses)))
         return self
 
     def reconstruction_error(self, X):
@@ -137,6 +142,7 @@ class AEAnomalyDetector:
             "grayscale": self.grayscale,
             "bottleneck": self.bottleneck,
             "hidden": self.hidden,
+            "loss_history": self.loss_history,
         }, path)
 
     def load(self, path):
@@ -145,6 +151,7 @@ class AEAnomalyDetector:
         self.grayscale = checkpoint["grayscale"]
         self.bottleneck = checkpoint["bottleneck"]
         self.hidden = checkpoint["hidden"]
+        self.loss_history = checkpoint.get("loss_history", [])
         self.in_channels = 1 if self.grayscale else 3
         self.net = _ConvAE(self.in_channels, self.img_size, self.hidden, self.bottleneck).to(self.device)
         self.net.load_state_dict(checkpoint["state_dict"])

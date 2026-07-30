@@ -20,9 +20,13 @@ GRAYSCALE = True
 # Fraction of variance PCA must keep (e.g. 0.90 = keep 90% of the information)
 PCA_VARIANCE = 0.90
 
-# Percentile of the TRAIN reconstruction error used as the alarm threshold.
-# 99 means: only the top 1% "hardest" normal training images would be false alarms.
+# Percentile of the VALIDATION reconstruction error used as the alarm threshold.
+# 99 means: only the top 1% "hardest" validation images would be false alarms.
 THRESHOLD_PERCENTILE = 99
+
+# Fraction of the normal train/ images held out as a VALIDATION set (never
+# used to fit the model, only to pick the threshold). 0.2 = 80% train / 20% val.
+VAL_SPLIT = 0.2
 
 MODEL_DIR = "models"
 RESULTS_DIR = "results"
